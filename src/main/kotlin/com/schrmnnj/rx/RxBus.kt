@@ -12,10 +12,6 @@ import rx.subjects.Subject
 class RxBus : IRxBus {
     val bus: Subject<Any, Any> = SerializedSubject(PublishSubject());
 
-    init {
-        println("Initialization rxBus")
-    }
-
     override fun send(event: IRxBusEvent): Unit {
         bus.onNext(event)
     }
