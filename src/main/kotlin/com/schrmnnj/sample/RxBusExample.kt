@@ -2,7 +2,7 @@ package com.schrmnnj.sample
 
 import com.schrmnnj.rx.IRxBus
 import com.schrmnnj.rx.RxBus
-import com.schrmnnj.rx.annotation.Subscribe
+import com.schrmnnj.rx.handler.RxBusEventHolder
 import com.schrmnnj.sample.events.SimpleRxEvent
 
 /**
@@ -11,18 +11,33 @@ import com.schrmnnj.sample.events.SimpleRxEvent
 fun main(args: Array<String>): Unit {
     val rxBus: IRxBus = RxBus()
 
-    subscribe(rxBus)
+    SomeActivity(rxBus).onResume()
 
     rxBus.send(SimpleRxEvent())
 
     println("Exit!")
 }
 
-@Subscribe(SimpleRxEvent::class)
-fun subscribe(rxBus: IRxBus): Unit {
-    rxBus.getObservable(SimpleRxEvent::class.java).subscribe({ event ->
-        println("Hello, RxEvent!")
-    }, {
-        println("Unexpected error. Message: ${it.message}")
-    })
+class SomeActivity(val rxBus: IRxBus) : ActivitySimulator, RxBusEventHolder {
+
+    override fun onPause() {
+        rxBus.unsubscribe()
+    }
+
+    override fun onResume() {
+        subscribe()
+    }
+
+    override fun subscribe() {
+        rxBus.getObservable(SimpleRxEvent::class.java).subscribe({ event ->
+            println("Hello, RxEvent!")
+        }, {
+            println("Unexpected error. Message: ${it.message}")
+        })
+    }
+}
+
+interface ActivitySimulator {
+    fun onPause()
+    fun onResume()
 }
