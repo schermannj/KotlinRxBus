@@ -23,4 +23,6 @@ class RxBus : IRxBus {
     override fun unsubscribe(): Unit {
         bus.onCompleted()
     }
+
+    //TODO: add function which will wrap getObservables(type).subscribe({success}, {error}) + overload for ..subscribe.({success})
 }
