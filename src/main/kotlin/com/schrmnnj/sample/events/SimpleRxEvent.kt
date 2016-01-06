@@ -1,4 +1,4 @@
-package com.schrmnnj.events
+package com.schrmnnj.sample.events
 
 import com.schrmnnj.rx.event.IRxBusEvent
 
