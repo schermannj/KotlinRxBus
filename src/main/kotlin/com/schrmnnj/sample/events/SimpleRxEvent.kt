@@ -5,4 +5,4 @@ import com.schrmnnj.rx.event.IRxBusEvent
 /**
  * Created on 05.01.16.
  */
-class SimpleRxEvent : IRxBusEvent
+class SimpleRxEvent(val name: String) : IRxBusEvent
