@@ -1,6 +1,7 @@
 package com.schrmnnj.rx
 
 import com.schrmnnj.rx.event.IRxBusEvent
+import com.schrmnnj.rx.exception.UnexpectedRxBusException
 import rx.Observable
 import rx.lang.kotlin.PublishSubject
 import rx.subjects.SerializedSubject
@@ -20,9 +21,17 @@ class RxBus : IRxBus {
         return bus.ofType(type)
     }
 
+    override fun <T> subscribeOn(type: Class<T>, success: (T) -> Unit, error: (Throwable) -> Unit) {
+        getObservable(type).subscribe(success, error)
+    }
+
+    override fun <T> subscribeOn(type: Class<T>, success: (T) -> Unit) {
+        subscribeOn(type, success, {
+            throw UnexpectedRxBusException("Unexpected RxBus exception. Cause: ${it.message}")
+        })
+    }
+
     override fun unsubscribe(): Unit {
         bus.onCompleted()
     }
-
-    //TODO: add function which will wrap getObservables(type).subscribe({success}, {error}) + overload for ..subscribe.({success})
 }

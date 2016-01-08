@@ -2,6 +2,7 @@ package com.schrmnnj.rx
 
 import com.schrmnnj.rx.event.IRxBusEvent
 import rx.Observable
+import rx.functions.Action1
 
 /**
  * Created on 05.01.16.
@@ -12,4 +13,8 @@ interface IRxBus {
     fun <T> getObservable(type: Class<T>): Observable<T>
 
     fun unsubscribe(): Unit
+
+    fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit, error: (Throwable) -> Unit): Unit
+
+    fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit): Unit
 }

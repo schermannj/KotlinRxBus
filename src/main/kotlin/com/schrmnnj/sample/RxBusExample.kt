@@ -34,6 +34,12 @@ class SomeActivity(val rxBus: IRxBus) : ActivitySimulator, RxBusEventHolder {
         }, {
             println("Unexpected error. Message: ${it.message}")
         })
+
+        rxBus.subscribeOn(SimpleRxEvent::class.java, {
+            println("Success")
+        }, {
+            println("Error")
+        })
     }
 }
 
