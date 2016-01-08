@@ -3,51 +3,67 @@ package com.schrmnnj.sample
 import com.schrmnnj.rx.IRxBus
 import com.schrmnnj.rx.RxBus
 import com.schrmnnj.rx.annotation.SubscribeOn
-import com.schrmnnj.sample.events.SimpleRxEvent
+import com.schrmnnj.sample.events.ExtendedRxBusEvent
+import com.schrmnnj.sample.events.SimpleRxBusEvent
+import rx.subscriptions.CompositeSubscription
 
 /**
  * Created on 05.01.16.
  */
 fun main(args: Array<String>): Unit {
     val rxBus: IRxBus = RxBus()
-
     val someActivity = SomeActivity(rxBus)
-    rxBus.register(someActivity)
 
-//    someActivity.subscribe()
+    someActivity.onResume()
 
-    rxBus.send(SimpleRxEvent("Test event"))
+    rxBus.send(SimpleRxBusEvent("Simple Event"))
+    rxBus.send(ExtendedRxBusEvent("ExtendedRxBusEvent", 12))
 
-    println("Exit!")
+    someActivity.onPause()
+
+    println("Done!")
 }
 
 class SomeActivity(val rxBus: IRxBus) : ActivitySimulator {
+    private val compositeSubscription: CompositeSubscription = CompositeSubscription()
+    lateinit private var subscriptionKey: String
 
     override fun onPause() {
-        rxBus.unsubscribe()
+        rxBus.unsubscribe(subscriptionKey)
+        compositeSubscription.unsubscribe()
     }
 
     override fun onResume() {
         subscribe()
+        subscriptionKey = rxBus.register(this)
     }
 
     fun subscribe() {
-        rxBus.getObservable(SimpleRxEvent::class.java).subscribe({ event ->
-            println("Hello, RxEvent!")
+        val subscription1 = rxBus.getObservable(SimpleRxBusEvent::class.java).subscribe({ event ->
+            println("method: subscribe() :  Hello, name - ${event.name}, SimpleRxBusEvent!")
         }, {
             println("Unexpected error. Message: ${it.message}")
         })
 
-        rxBus.subscribeOn(SimpleRxEvent::class.java, {
-            println("Success")
+        compositeSubscription.add(subscription1)
+
+        val subscription2 = rxBus.subscribeOn(ExtendedRxBusEvent::class.java, { event ->
+            println("method: subscribe() :  Hello, name - ${event.name}, age - ${event.age}, ExtendedRxBusEvent!")
         }, {
-            println("Error")
+            println("Unexpected error. Message: ${it.message}")
         })
+
+        compositeSubscription.add(subscription2)
     }
 
     @SubscribeOn
-    fun subscribeAnnotated(event: SimpleRxEvent) {
-        println("It's working too, I'm the best :3. Event - ${event.name}")
+    fun checkAnnotationSubscription1(event: SimpleRxBusEvent) {
+        println("method: checkAnnotationSubscription1() : Event - ${event.name}; SimpleRxBusEvent")
+    }
+
+    @SubscribeOn
+    fun checkAnnotationSubscription2(event: ExtendedRxBusEvent) {
+        println("method: checkAnnotationSubscription2() : Event: name - ${event.name}, age - ${event.age}; ExtendedRxBusEvent")
     }
 }
 

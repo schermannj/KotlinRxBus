@@ -2,6 +2,7 @@ package com.schrmnnj.rx
 
 import com.schrmnnj.rx.event.IRxBusEvent
 import rx.Observable
+import rx.Subscription
 import rx.functions.Action1
 import javax.xml.ws.Holder
 
@@ -13,11 +14,11 @@ interface IRxBus {
 
     fun <T> getObservable(type: Class<T>): Observable<T>
 
-    fun unsubscribe(): Unit
+    fun register(holder: Any): String
 
-    fun register(holder: Any): Unit
+    fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit, error: (Throwable) -> Unit): Subscription
 
-    fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit, error: (Throwable) -> Unit): Unit
+    fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit): Subscription
 
-    fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit): Unit
+    open fun unsubscribe(key: String)
 }
