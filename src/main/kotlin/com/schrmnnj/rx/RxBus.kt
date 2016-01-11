@@ -10,21 +10,19 @@ import rx.lang.kotlin.PublishSubject
 import rx.subjects.SerializedSubject
 import rx.subjects.Subject
 import rx.subscriptions.CompositeSubscription
-import java.util.*
 
 /**
  * Created on 05.01.16.
  */
 class RxBus : IRxBus {
     private val bus: Subject<Any, Any> = SerializedSubject(PublishSubject());
-    private val compositeSubscriptionsHolder: MutableMap<String, CompositeSubscription> = hashMapOf()
+    private val compositeSubscriptionsHolder: MutableMap<Int, CompositeSubscription> = hashMapOf()
 
     override fun send(event: IRxBusEvent): Unit {
         bus.onNext(event)
     }
 
-    override fun register(holder: Any): String {
-        val key: String = UUID.randomUUID().toString()
+    override fun register(holder: Any): Unit {
         val compositeSubscription: CompositeSubscription = CompositeSubscription()
 
         holder.javaClass.methods
@@ -46,9 +44,7 @@ class RxBus : IRxBus {
                     compositeSubscription.add(subscription)
                 })
 
-        compositeSubscriptionsHolder.put(key, compositeSubscription)
-
-        return key
+        compositeSubscriptionsHolder.put(getRegistrationKey(holder), compositeSubscription)
     }
 
     override fun <T> getObservable(type: Class<T>): Observable<T> {
@@ -65,11 +61,15 @@ class RxBus : IRxBus {
         })
     }
 
-    override fun unsubscribe(key: String): Unit {
-        val compositeSubscription = compositeSubscriptionsHolder[key] ?: throw RxEventException("Not found any subscription for given key.")
+    override fun unsubscribe(holder: Any): Unit {
+        val compositeSubscription = compositeSubscriptionsHolder[getRegistrationKey(holder)] ?: throw RxEventException("Not found any subscription for given key.")
 
         if (compositeSubscription.hasSubscriptions()) {
             compositeSubscription.unsubscribe()
         }
+    }
+
+    private fun getRegistrationKey(holder: Any): Int {
+        return holder.javaClass.name.hashCode()
     }
 }

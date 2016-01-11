@@ -26,16 +26,15 @@ fun main(args: Array<String>): Unit {
 
 class SomeActivity(val rxBus: IRxBus) : ActivitySimulator {
     private val compositeSubscription: CompositeSubscription = CompositeSubscription()
-    lateinit private var subscriptionKey: String
 
     override fun onPause() {
-        rxBus.unsubscribe(subscriptionKey)
+        rxBus.unsubscribe(this)
         compositeSubscription.unsubscribe()
     }
 
     override fun onResume() {
         subscribe()
-        subscriptionKey = rxBus.register(this)
+        rxBus.register(this)
     }
 
     fun subscribe() {

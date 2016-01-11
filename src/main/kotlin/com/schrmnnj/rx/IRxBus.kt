@@ -14,11 +14,11 @@ interface IRxBus {
 
     fun <T> getObservable(type: Class<T>): Observable<T>
 
-    fun register(holder: Any): String
+    fun register(holder: Any): Unit
 
     fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit, error: (Throwable) -> Unit): Subscription
 
     fun <T> subscribeOn(type: Class<T>, success: (t: T) -> Unit): Subscription
 
-    open fun unsubscribe(key: String)
+    fun unsubscribe(holder: Any): Unit
 }
